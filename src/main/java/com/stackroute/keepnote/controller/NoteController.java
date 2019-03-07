@@ -65,15 +65,19 @@ public class NoteController {
      */
     @RequestMapping(value = "/saveNote")
     public String addNotes(@RequestParam(value = "noteId") int id, @RequestParam(value = "noteTitle") String noteTitle, @RequestParam(value = "noteContent") String noteContent, @RequestParam(value = "noteStatus") String noteStatus, ModelMap modalMap) {
-
-        Note note=new Note();
-        note.setNoteId(id);
-        note.setNoteTitle(noteTitle);
-        note.setNoteContent(noteContent);
-        note.setNoteStatus(noteStatus);
-        LocalDateTime today = LocalDateTime.now();
-        note.setCreatedAt(today);
-        noteRepository.addNote(note);
+        if(!noteRepository.exists(id)) {
+            Note note = new Note();
+            note.setNoteId(id);
+            note.setNoteTitle(noteTitle);
+            note.setNoteContent(noteContent);
+            note.setNoteStatus(noteStatus);
+            LocalDateTime today = LocalDateTime.now();
+            note.setCreatedAt(today);
+            noteRepository.addNote(note);
+        }
+        else {
+            modalMap.addAttribute("error","Note Id  already exists");
+        }
         List<Note> list = noteRepository.getAllNotes();
         modalMap.addAttribute("list",list);
 
@@ -87,8 +91,10 @@ public class NoteController {
      * This handler method should map to the URL "/deleteNote"
      */
     @RequestMapping(value = "/deleteNote")
-    public String deleteNotes(ModelMap modalMap) {
-
+    public String deleteNotes(@RequestParam("noteId")int id, ModelMap modalMap) {
+        noteRepository.deleteNote(id);
+        List<Note> list = noteRepository.getAllNotes();
+        modalMap.addAttribute("list",list);
         return "redirect:/";
     }
 }
